@@ -1,0 +1,558 @@
+Sales Receipt,Sales Email,Expect Output
+,"Von: Felix Hammerstein fhammerstein@norse-group.com
+Gesendet: Dienstag, 29. Oktober 2024 14:45
+An: info (DE) info@anhalt-tools.com
+Betreff: Bestellung 4701865321
+
+Attention: This message was sent from outside of ANHALT. Please do not click links or open attachments unless you recognize the source of this email and know the content is safe! If you have questions please contact your local IT.
+
+Sehr geehrte Damen und Herren,
+
+anbei unsere Bestellung (siehe Anhang).
+Wir bitten um Zusendung Ihrer Auftragsbestätigung mit Terminangabe innerhalb der nächsten 3 Werktage.
+
+Mit freundlichen Grüßen
+
+Felix Hammerstein
+Procurement Specialist
+Procurement
+NORSE Tech & Innovation Hub GmbH - Münster
+
+Phone +49-591-9136-7861
+Fax +49-591-9136-786fhammerstein@norse-group.com
+
+NORSE Tech & Innovation Hub GmbH
+Im Gewerbepark 21
+48157 Münster · Germanywww.norse-group.com
+
+---
+
+This e-mail may contain confidential and/or privileged information. If you are not the intended recipient (or have received this e-mail in error) please notify the sender immediately and destroy this e-mail. Any unauthorized copying, disclosure or distribution of the material in this e-mail is strictly forbidden. This e-mail address is provided for business correspondence only. It is not to be used for promotional or bulk mail, or given or sold to a third party for any purpose.
+","Buyer:
+• buyer_company_name: NORSE Tech and Innovation Hub GmbH
+• buyer_person_name: Felix Hammerstein
+• buyer_email_address: fhammerstein@norse-hub.com
+
+Order:
+• order_number: 4701865321
+• order_date: 29.10.2024
+• delivery_address_street: Im Gewerbepark 21
+• delivery_address_city: Münster
+• delivery_address_postal_code: 48157
+
+Product:
+• position: 15
+• article_code: Z1387462
+• quantity: 7"
+,"
+Von: Lena Hoffmeister lhoffmeister@technovac.com
+Gesendet: Dienstag, 28. Oktober 2024 10:35
+An: Jörg Ackermann joerg.ackermann@otta.com
+Betreff: Bestellung 4704869120
+
+Attention: This message was sent from outside of OTTA. Please do not click links or open attachments unless you recognize the source of this email and know the content is safe! If you have questions please contact your local IT.
+
+Sehr geehrte Damen und Herren,
+
+anbei unsere Bestellung (siehe Anhang).
+Wir bitten um Zusendung Ihrer Auftragsbestätigung mit Terminangabe innerhalb der nächsten 3 Werktage.
+
+Mit freundlichen Grüßen
+
+Lena Hoffmeister
+Procurement Specialist
+Procurement
+TECHNOVAC Systems GmbH
+
+Phone +49 (0) 8334 631-0
+Fax +49 (0) 8334 601-189lhoffmeister@technovac.com
+
+TECHNOVAC Systems GmbH
+Bahnstraße 12
+87700 Heathrow · Germanywww.technovac.com
+
+---
+
+This e-mail may contain confidential and/or privileged information. If you are not the intended recipient (or have received this e-mail in error) please notify the sender immediately and destroy this e-mail. Any unauthorized copying, disclosure or distribution of the material in this e-mail is strictly forbidden. This e-mail address is provided for business correspondence only. It is not to be used for promotional or bulk mail, or given or sold to a third party for any purpose.
+
+
+
+","Buyer:
+• buyer_company_name: TECHNOVAC Systems GmbH
+• buyer_person_name: Lena Hoffmeister
+• buyer_email_address: lhoffmeister@technovac.com
+
+Order:
+• order_number: 4704869120
+• order_date: 28.10.2024
+• delivery_address_street: Bahnstrasse 12
+• delivery_address_city: Heathrow
+• delivery_address_postal_code: 87700
+
+Product:
+• position: 10
+• article_code: 12573697
+• quantity: 3"
+,"
+Von: Matthias Greiner mgreiner@hofbauer-eng.de
+Gesendet: Mittwoch, 30. Oktober 2024 10:15
+An: info (DE) info@otta.com
+Cc: Stefan Kandler skandler@hofbauer-eng.de; Tobias Steinbrenner tsteinbrenner@hofbauer-eng.de
+Betreff: Hofbauer_478962
+
+Attention: This message was sent from outside of OTTA. Please do not click links or open attachments unless you recognize the source of this email and know the content is safe! If you have questions please contact your local IT.
+
+Sehr geehrte Damen und Herren,
+
+anbei erhalten Sie unsere Bestellung sowie die dazugehörigen gültigen „Allgemeine Einkaufsbedingungen“.
+Bitte lassen Sie uns dazu eine zeitnahe Auftragsbestätigung zukommen.
+
+Mit freundlichen Grüßen
+
+Matthias Greiner
+Technischer Einkauf
+
+Hofbauer Engineering GmbH
+Telefon  +49 (0) 9971 8549 84
+Email     mgreiner@hofbauer-eng.de
+Internet  www.hofbauer-eng.de
+
+Hofbauer Falkenberg
+Hofbauer Management GmbH | Hofbauer Engineering GmbH | Hofbauer Technologie GmbH
+Industriestr. 9 | 84326 Falkenberg | info@hofbauer-eng.de
+
+Registergericht  Regensburg - HRB-Nr: 17540 | Hofbauer Management GmbH
+Registergericht: Regensburg - HRB-Nr: 3299   | Hofbauer Engineering GmbH
+Registergericht: Regensburg - HRB-Nr: 9608   | Hofbauer Technologie GmbH
+Geschäftsführer: Christoph Hofbauer
+Es gelten unsere AGB / AEB unter www.hofbauer-eng.de
+
+Hinweis
+Der Inhalt dieser E-Mail ist ausschließlich für den bezeichneten Adressaten bestimmt.
+Wenn Sie nicht der vorgesehene Adressat dieser E-Mail oder dessen Vertreter sein sollten, so beachten Sie bitte,
+dass jede Form der Kenntnisnahme, Veröffentlichung, Vervielfältigung oder Weitergabe des Inhalts dieser E-Mail
+unzulässig ist. Wir bitten Sie, sich in diesem Fall mit dem Absender der E-Mail in Verbindung zu setzen.
+
+","Buyer:
+• buyer_company_name: Hofbauer Engineering GmbH
+• buyer_person_name: Matthias Greiner
+• buyer_email_address: mgreiner@hofbauer-eng.de
+
+Order:
+• order_number: 478962
+• order_date: 30.10.2024
+• delivery_address_street: Industriestr. 9
+• delivery_address_city: Falkenberg
+• delivery_address_postal_code: 84326
+
+Product:
+• position: 1
+• article_code: X920381742
+• quantity: 3"
+,"
+Von: Einkauf NT Precision GmbH einkauf@nt-precision.de
+Gesendet: Donnerstag, 14. November 2024 12:52
+An: info (DE) info@otta.com
+Betreff: WG: Bestellung 2024-08477 vom 14.11.2024 fertig zum Versand
+
+Attention: This message was sent from outside of OTTA. Please do not click links or open attachments unless you recognize the source of this email and know the content is safe! If you have questions please contact your local IT.
+
+Sehr geehrte Damen und Herren,
+
+im Anhang finden Sie unsere oben genannte Bestellung. Bitte lassen Sie uns umgehend Ihre Auftragsbestätigung zukommen.
+
+Mit freundlichen Grüßen / Best Regards
+Tulia Faber
+NT Precision GmbH
+Einkauf/Purchasing Department
+Mad-Planck-Straße 10
+D-92637 Weiden
+Phone      +49 (0) 9461 91106-218
+Email        tfaber@nt-precision.dewww.nt-precision.de
+
+Sitz der Gesellschaft: 92637 Weiden
+Geschäftsführung: Stefan Kulzer, Benedikt Kulzer
+Amtsgericht Regensburg HRB 3837
+
+Der Inhalt dieser E-Mail ist ausschließlich für den Adressaten bestimmt und kann vertrauliche oder gesetzlich geschützte Informationen enthalten. Wenn Sie nicht der bestimmungsgemäße Adressat sind, unterrichten Sie bitte den Absender und vernichten Sie diese E-Mail. Anderen als dem bestimmungsgemäßen Adressaten ist es untersagt, diese E-Mail zu lesen, zu speichern, weiterzuleiten oder dessen Inhalt auf welche Weise auch immer zu verwenden. Wir verwenden aktuelle Virenschutzprogramme. Für Schäden, die dem Empfänger gleichwohl durch von uns zugesandte mit Viren befallene E-Mails entstehen, schließen wir jede Haftung aus.
+The information contained in this email is intended only for its addressee and may contain confidential and/or privileged information. If the reader of this email is not the intended recipient, you are hereby notified that reading, saving, distribution or use of the content of this email in any way is prohibited. If you have received this email in error, please notify the sender and delete the email. We use updated antivirus protection software. We do not accept any responsibility for damages caused anyhow by viruses transmitted via email.
+
+---
+
+Von: DocuWare DocuWare@nt-precision.de
+Gesendet: Donnerstag, 14. November 2024 12:50
+An: Einkauf NT Precision GmbH einkauf@nt-precision.de
+Betreff: Bestellung 2024-08477 vom 14.11.2024 fertig zum Versand
+
+Die anhängige Bestellung kann nun an den Lieferanten geschickt werden.
+
+zur Bestellung im Archiv
+
+","Buyer:
+• buyer_company_name: NT Precision GmbH
+• buyer_person_name: Tulia Faber
+• buyer_email_address: tfaber@nt-precision.de
+
+Order:
+• order_number: 2024-08477
+• order_date: 14.11.2024
+• delivery_address_street: Mad-Planck-Straße 10
+• delivery_address_city: Weiden
+• delivery_address_postal_code: 92637
+
+Product:
+• position: 1
+• article_code: X7630260
+• quantity: 3"
+,"
+Von: Weiss, Lennart lweiss@moeller-tools.de
+Gesendet: Donnerstag, 14. November 2024 14:37
+An: info (DE) info@otta-tools.com
+Betreff: Bestellung 202482519
+
+Attention: This message was sent from outside of OTTA. Please do not click links or open attachments unless you recognize the source of this email and know the content is safe! If you have questions please contact your local IT.
+
+Guten Tag,
+anbei erhalten Sie unsere o. g. Bestellung in digitaler Form (PDF).
+
+Mit freundlichen Grüßen
+
+Möller Industrial Tools GmbH
+Lennart Weiss (Innendienst)lweiss@moeller-tools.de
+
+Werkstr. 19
+67059 Ludwigshafen
+Inh./GF: Dipl. Ing. Michael Möller
+Stefan Richter
+Telefon     : 039322-3488
+Fax          : 039322-44992
+Email        : info@moeller-tools.de
+Homepage : http://www.moeller-tools.de
+Sitz der Gesellschaft : Ludwigshafen
+Amtsgericht Mannheim HRA 6589Ust.Id.Nr. DE294672801
+D-U-N-S- Nummer 765432189
+Persönl. Haftender Gesellschafter: Möller Verwaltungs-GmbH
+Amtsgericht Mannheim HRB 117542
+Sitz der Gesellschaft : Karlsruhe
+Erfüllungsort und Gerichtsstand: Mannheim
+Mitglied des EDE und der EPT-Gruppe Frankfurt
+
+Gemäß §28 Abs.3 BDSG ist die Verwendung der Adresse für Werbung untersagt.
+
+This Email communication (and any attachment/s) are confidential and are intended only for the individual(s) or entity named above and to others who have been specifically authorized to receive it. If you are not the intended recipient, please do not read, copy, use or disclose the contents of this communication to others. Please notify the sender that you have received this Email in error by calling the phone number indicated or by Email, and delete the Email (including any attachment/s) subsequently. This information may be subject to a professional secrecy (e.g. of auditor, tax or legal advisor), other privilege or otherwise be protected by work product immunity or other legal rules. Thank you.
+
+
+
+","Buyer:
+• buyer_company_name: Möller Industrial Tools GmbH
+• buyer_person_name: Lennart Weiss
+• buyer_email_address: lweiss@moeller-tools.de
+
+Order:
+• order_number: 202482519
+• order_date: 14.11.2024
+• delivery_address_street: Werkstr. 19
+• delivery_address_city: Ludwigshafen
+• delivery_address_postal_code: 67059
+
+Product:
+• position: 1
+• article_code: P45233180
+• quantity: 100"
+,"
+Von: Hartmann, Nico nhartmann@weber-tools.com
+Gesendet: Donnerstag, 14. November 2024 12:39
+An: Oschlies Andrea Andrea.Oschlies@otta.de
+Cc: Pollmann, Stefan s.pollmann@weber-tools.com
+Betreff: Bestellung Nr. 143632
+
+Sie erhalten nicht häufig E-Mails von nhartmann@weber-tools.com. Erfahren Sie, warum dies wichtig ist.
+
+Attention: This message was sent from outside of OTTA. Please do not click links or open attachments unless you recognize the source of this email and know the content is safe! If you have questions please contact your local IT.
+
+Sehr geehrte Damen und Herren,
+im Anhang erhalten Sie unsere Bestellung Nr. 143632.
+
+************************************************
+!!! Betriebsurlaub !!!
+
+Wir haben vom 23. Dezember 2024 - 01. Januar 2025 geschlossen !!!
+!!! In dieser Zeit ist keine Warenannahme möglich. !!!
+Ab dem 02. Januar 2025 sind wir wieder wie gewohnt für Sie da.
+************************************************
+
+Mit freundlichen Grüßen / Kind regards
+Weber Tools GmbH
+
+Nico Hartmann
+Einkauf
+
+Telefon : +49 441 3108 333
+Mail :       nhartmann@weber-tools.com
+Web:       www.weber-tools.com
+Bergstraße 42 64293 Darmstadt
+
+Sitz der Gesellschaft: Darmstadt • Handelsregister Darmstadt HR-Nr.: HRB 32411 • Geschäftsführer: Swantje Horn, Dennis Behnken
+************************************************
+Wir haben vom 23.12.2024 – 01.01.2025 geschlossen.
+Frohe Weihnachten und alles Gute für das Jahr 2025!
+************************************************
+Diese E-Mail Nachricht enthält vertrauliche und/oder rechtlich geschützte Informationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail irrtümlich erhalten haben, informieren Sie bitte sofort den Absender und vernichten Sie diese Mail. Das unerlaubte Kopieren sowie die unbefugte Weitergabe dieser Mail sind nicht gestattet.
+
+
+
+","Buyer:
+• buyer_company_name: Weber Tools GmbH
+• buyer_person_name: Nico Hartmann
+• buyer_email_address: nhartmann@weber-tools.com
+
+Order:
+• order_number: 143632
+• order_date: 14.11.2024
+• delivery_address_street: Bergstraße 42
+• delivery_address_city: Darmstadt
+• delivery_address_postal_code: 64293
+
+Product:
+• position: 1
+• article_code: F8723491
+• quantity: 2
+
+• position: 2
+• article_code: T6589204
+• quantity: 2"
+,"
+Von: Schneider Metallbau GmbH - Produktion produktion@schneider-metall.de
+Gesendet: Donnerstag, 14. November 2024 13:56
+An: Oschlies Andrea Andrea.Oschlies@otta.de
+Betreff: Bestellung 24-3213-01
+
+Sie erhalten nicht häufig E-Mails von produktion@schneider-metall.de. Erfahren Sie, warum dies wichtig ist.
+
+Attention: This message was sent from outside of OTTA. Please do not click links or open attachments unless you recognize the source of this email and know the content is safe! If you have questions please contact your local IT.
+
+Sehr geehrte Damen und Herren,
+
+hiermit erhalten Sie eine Bestellung aus unserem Haus.
+
+Neu - Imagebroschüre:
+
+Mit freundlichen Grüßen
+David Lehmann
+Schneider Metallbau GmbH
+
+**************************************************************************
+Phone:               +49 (0)421 872694-40
+Fax  :                   +49 (0)421 872694-98
+
+eMail:     produktion@schneider-metall.de
+
+Schneider Metallbau GmbH
+Hafenstraße 78, 20457 Hamburg, Germanywww.schneider-metall.de
+
+**************************************************************************
+Firma: Schneider Metallbau GmbH | Sitz: Hamburg | Registergericht: Hamburg | Handelsregisternummer: HRB 9274 |
+Geschäftsführer: Dipl. Ing. Michael Schneider
+
+","Buyer:
+• buyer_company_name: Schneider Metallbau GmbH
+• buyer_person_name: David Lehmann
+• buyer_email_address: produktion@schneider-metall.de
+
+Order:
+• order_number: 24-3213-01
+• order_date: 14.11.2024
+• delivery_address_street: Hafenstraße 78
+• delivery_address_city: Hamburg
+• delivery_address_postal_code: 20457
+
+Product:
+• position: 1
+• article_code: P8420610
+• quantity: 5
+
+• position: 2
+• article_code: P8420501
+• quantity: 2"
+,"
+Von: Fabian Reuter freuter@zmtprecision.de
+Gesendet: Freitag, 15. November 2024 09:29:40 (UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna
+An: Pickelmann Sebastian sebastian.pickelmann@otta.de
+Betreff: Bestellung 67078 vom 15.11.2024 von ZMT Precision GmbH Industriestraße 12 40231 Düsseldorf
+
+Sie erhalten nicht häufig E-Mails von freuter@zmtprecision.de. Erfahren Sie, warum dies wichtig ist.
+
+Attention: This message was sent from outside of OTTA. Please do not click links or open attachments unless you recognize the source of this email and know the content is safe! If you have questions please contact your local IT.
+
+Sehr geehrte Damen und Herren,
+
+im Anhang finden Sie unsere aktuelle Bestellung 67078.
+Bitte mailen Sie uns hierfür die Auftragsbestätigung zu.
+
+Mit freundlichen Grüßen
+Fabian Reuter
+
+ZMT Precision GmbH
+Industriestraße 12 | 40231 Düsseldorf
+Tel: 02154-489866 | Fax: 02154-4898447
+eMail: freuter@zmtprecision.de
+
+ZMT Precision GmbH
+Industriestraße 12 | 40231 Düsseldorf
+Stadt-Sparkasse Düsseldorf
+Geschäftsführer Alexander Kramer
+HRB 78612 AG Düsseldorf
+USt.-IdNr.: DE294872651
+Steuernummer 135/8572/0192http://www.zmtprecision.de","Buyer:
+• buyer_company_name: ZMT Precision GmbH
+• buyer_person_name: Fabian Reuter
+• buyer_email_address: freuter@zmtprecision.de
+
+Order:
+• order_number: 67078
+• order_date: 15.11.2024
+• delivery_address_street: Industriestraße 12
+• delivery_address_city: Düsseldorf
+• delivery_address_postal_code: 40231
+
+Product:
+• position: 1
+• article_code: W50410008
+• quantity: 20
+
+• position: 2
+• article_code: H8616501
+• quantity: 1
+
+• position: 3
+• article_code: P8321501
+• quantity: 1"
+,"
+Von: Lehmann, Sophie slehmann@bauertech.de
+Gesendet: Freitag, 15. November 2024 09:56
+An: info (DE) info@otta.de
+Betreff: Bestellung BT 4500741345
+
+Attention: This message was sent from outside of OTTA. Please do not click links or open attachments unless you recognize the source of this email and know the content is safe! If you have questions please contact your local IT.
+
+Sehr geehrte Damen und Herren,
+
+in der Anlage erhalten Sie eine Bestellung als PDF.
+
+Zeichnung beigelegt [ ] ja   [x] n/a
+
+______________________________________________________________________________
+i. A. Sophie Lehmann
+Purchasing Department
+BauerTech GmbH
+Industriestraße 5
+72760 Reutlingen
+Phone: +49 7462 / 9466 - 5786
+Mail: slehmann@bauertech.de
+Web: https://www.bauertech.de
+
+______________________________________________________________________________
+
+Think before you print.
+
+This message (including any attachments) may contain confidential, proprietary, privileged and/or private information. The information is intended to be for the use of the individual or entity designated above. If you are not the intended recipient of this message, please notify the sender immediately, and delete the message and any attachments. Any disclosure, reproduction, distribution, or other use of this message or any attachments by an individual or entity other than the intended recipient is prohibited.
+
+Es gelten die aktuellen Datenschutzbestimmungen unter https://www.bauertech.de/datenschutz
+
+BauerTech GmbH
+Sitz der Gesellschaft: Reutlingen; Amtsgericht Stuttgart HRB 674328
+Geschäftsführende Gesellschafterinnen: Kathrin Beck, Nina Hofmann
+Geschäftsführung: Henner Weiss, Michael Arndt
+
+","Buyer:
+• buyer_company_name: BauerTech GmbH
+• buyer_person_name: Sophie Lehmann
+• buyer_email_address: slehmann@bauertech.de
+
+Order:
+• order_number: 4500741345
+• order_date: 15.11.2024
+• delivery_address_street: Industriestraße 5
+• delivery_address_city: Reutlingen
+• delivery_address_postal_code: 72760
+
+Product:
+• position: 10
+• article_code: U0400180
+• quantity: 8"
+,"
+Von: Einkauf einkauf@steinbach-precision.de
+Gesendet: Freitag, 15. November 2024 20:08:55 (UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna
+An: Kalpakidou Kiriaki
+Cc: Hofacker Stefan; Fertigung Werkstatt
+Betreff: STEINBACH-Bestellung Nr. 241494
+
+Attention: This message was sent from outside of OTTA. Please do not click links or open attachments unless you recognize the source of this email and know the content is safe! If you have questions please contact your local IT.
+
+Sehr geehrte Damen und Herren,
+
+hiermit bestellen wir zum gewünschten Liefertermin:
+Bestellung (unsere Bearbeitungsnummer: 77011/241494)
+
+Wir erwarten Ihre Auftragsbestätigung verbindlich innerhalb von 3 Werktagen an: einkauf@steinbach-precision.de
+Für den elektronischen Rechnungsversand verwenden Sie bitte: buchhaltung@steinbach-precision.de
+
+Bitte beachten:
+Auf allen Formularen sind folgende Angaben zwingend anzugeben:
+
+- unsere Auftragsnummer sowie unser Zeichen
+- unsere Artikelnummer
+- Zeichnungsnummer mit aktuellem Index
+
+","Buyer:
+• buyer_company_name: Steinbach Precision GmbH & Co. KG
+• buyer_person_name: Lukas Mertens
+• buyer_email_address: einkauf@steinbach-precision.de
+
+Order:
+• order_number: 241494
+• order_date: 15.11.2024
+• delivery_address_street: Industriepark 45
+• delivery_address_city: Bad Hersfeld
+• delivery_address_postal_code: 36251
+
+Products:
+• position: 1
+• article_code: 15630610
+• quantity: 1
+
+• position: 2
+• article_code: 7550391
+• quantity: 1
+
+• position: 3
+• article_code: 8560610
+• quantity: 1
+
+• position: 4
+• article_code: 8580391
+• quantity: 2
+
+• position: 5
+• article_code: 8585501
+• quantity: 2
+
+• position: 6
+• article_code: 8585610
+• quantity: 2
+
+• position: 7
+• article_code: 8660180
+• quantity: 3
+
+• position: 8
+• article_code: 8678501
+• quantity: 2
+
+• position: 9
+• article_code: B570150280
+• quantity: 2
+
+• position: 10
+• article_code: X6561140
+• quantity: 2"

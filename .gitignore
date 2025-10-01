@@ -1,0 +1,38 @@
+# Environment & secrets
+.env
+.env.*
+
+# Virtual environments
+.venv/
+venv/
+
+# Python cache/artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+build/
+dist/
+
+# Jupyter/Notebook checkpoints
+.ipynb_checkpoints/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# Data/output
+batch_extraction_results.csv
+batch_extraction_comparison.xlsx
