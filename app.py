@@ -5,15 +5,31 @@ import streamlit as st
 from pypdf import PdfReader
 from dotenv import load_dotenv
 import pandas as pd
-from google import genai
+from openai import AzureOpenAI
 
 load_dotenv()
-# The client gets the API key from the environment variable `GEMINI_API_KEY`.
-client = genai.Client()
+
+# Azure OpenAI client
+azure_key = os.getenv("AZURE_OPENAI_API_KEY") or os.getenv("AZURE_OPENAI_KEY")
+azure_api_version = os.getenv("AZURE_OPENAI_API_VERSION")
+azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+azure_deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT")
+if not all([azure_key, azure_api_version, azure_endpoint, azure_deployment]):
+    st.error("Missing Azure OpenAI env vars. Please set AZURE_OPENAI_API_KEY (or AZURE_OPENAI_KEY), AZURE_OPENAI_API_VERSION, AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_DEPLOYMENT.")
+client = AzureOpenAI(api_key=azure_key, api_version=azure_api_version, azure_endpoint=azure_endpoint)
 
 st.set_page_config(page_title="EcomCorp Order Extractor", layout="wide")
 
-SYSTEM_PROMPT = """You are an elite information extractor. Use only values from the RECEIPT, not EMAIL, for all fields. Output valid JSON matching the schema exactly—never add or remove keys. Use exact spelling, punctuation, and special characters as in the RECEIPT (e.g., 'Münster' not 'Munster', 'and' not '&'). If a value is missing or uncertain, use null. Never guess or hallucinate. Dates: output as YYYY.MM.DD if parseable, else null. Strict JSON only—no comments, no markdown, no trailing commas.
+SYSTEM_PROMPT = """You extract structured order data. Prefer RECEIPT over EMAIL for overlaps. If a value is missing or uncertain, return null. Do not guess.
+
+Output ONLY strict JSON matching the schema (no extra keys/text/markdown). Keep exact spelling/diacritics from sources. Dates: accept many formats; output YYYY.MM.DD if parseable, else null.
+
+Heuristics (general, not absolute):
+- product_article_code: pick the primary product code token on the line. If multiple candidates appear, prefer an alphanumeric code starting with a letter (e.g., X7630260, P8420610). If only a numeric code exists (e.g., 15630610), use it as written. Strip obvious trailing descriptors (units/notes like EA/QTY/Dxx/E) when clearly separable from the code.
+- buyer_email_address: must be a valid email if present; else null.
+- order_number: may be digits or mixed with hyphens (e.g., 2024-08477). Return as written from RECEIPT.
+- delivery_address_city/postal: preserve diacritics; postal codes are often 5 digits; if ambiguous, return as written or null.
+- products: include each explicit line item from RECEIPT only; 1-based positions in reading order; no inferred or duplicate items.
 
 SCHEMA (must match exactly):
 {
@@ -68,28 +84,43 @@ RECEIPT:
     ]
 
 def call_llm(messages: list) -> tuple[str, dict | None]:
+    # Using Azure OpenAI Responses API
     try:
-        prompt = "\n\n".join([m["content"] for m in messages])
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt
+        resp = client.responses.create(
+            model=azure_deployment,
+            input=messages,
+            temperature=0,
+            max_output_tokens=1200,
         )
-        text = response.text
+        text = resp.output_text or ""
     except Exception as e:
         return f"LLM call failed: {e}", None
 
     # Remove markdown code block if present
     if text.strip().startswith("```"):
         lines = text.strip().splitlines()
-        # Remove the first and last line if they are code block markers
         if lines[0].startswith("```") and lines[-1].startswith("```"):
             text = "\n".join(lines[1:-1])
 
+    # Fallback: try to extract JSON substring
+    import re as _re
+    candidate = text.strip()
+    if not candidate.startswith("{"):
+        m = _re.search(r"\{[\s\S]*\}\s*$", candidate)
+        if m:
+            candidate = m.group(0)
     try:
-        data = json.loads(text)
-        return text, data
-    except json.JSONDecodeError as je:
-        return f"Non-JSON or invalid JSON returned:\n{text}\n\nError: {je}", None
+        data = json.loads(candidate)
+        return candidate, data
+    except json.JSONDecodeError:
+        m2 = _re.search(r"\{[\s\S]*\}", text)
+        if m2:
+            try:
+                data = json.loads(m2.group(0))
+                return m2.group(0), data
+            except Exception:
+                pass
+        return f"Non-JSON or invalid JSON returned:\n{text}", None
 
 def flatten_paths(d, base=""):
     if isinstance(d, dict):

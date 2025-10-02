@@ -1,0 +1,24 @@
+Index,buyer_company_name,buyer_person_name,buyer_email_address,order_number,order_date,delivery_address_street,delivery_address_city,delivery_address_postal_code,product_position,product_article_code,product_quantity
+1,NORSE Tech and Innovation Hub GmbH,Felix Hammerstein,fhammerstein@norse-hub.com,4701865321,29.10.2024,Im Gewerbepark 21,Münster,48157,15,Z1387462,7
+2,TECHNOVAC Systems GmbH,Lena Hoffmeister,lhoffmeister@technovac.com,4704869120,28.10.2024,Bahnstrasse 12,Heathrow,87700,10,12573697,3
+3,Hofbauer Engineering GmbH,Matthias Greiner,mgreiner@hofbauer-eng.de,478962,30.10.2024,Industriestr. 9,Falkenberg,84326,1,X920381742,3
+4,NT Precision GmbH,Tulia Faber,tfaber@nt-precision.de,2024-08477,14.11.2024,Mad-Planck-Straße 10,Weiden,92637,1,X7630260,3
+5,Möller Industrial Tools GmbH,Lennart Weiss,lweiss@moeller-tools.de,202482519,14.11.2024,Werkstr. 19,Ludwigshafen,67059,1,P45233180,100
+6,Weber Tools GmbH,Nico Hartmann,nhartmann@weber-tools.com,143632,14.11.2024,Bergstraße 42,Darmstadt,64293,1,F8723491,2
+6,Weber Tools GmbH,Nico Hartmann,nhartmann@weber-tools.com,143632,14.11.2024,Bergstraße 42,Darmstadt,64293,2,T6589204,2
+7,Schneider Metallbau GmbH,David Lehmann,produktion@schneider-metall.de,24-3213-01,14.11.2024,Hafenstraße 78,Hamburg,20457,1,P8420610,5
+7,Schneider Metallbau GmbH,David Lehmann,produktion@schneider-metall.de,24-3213-01,14.11.2024,Hafenstraße 78,Hamburg,20457,2,P8420501,2
+8,ZMT Precision GmbH,Fabian Reuter,freuter@zmtprecision.de,67078,15.11.2024,Industriestraße 12,Düsseldorf,40231,1,W50410008,20
+8,ZMT Precision GmbH,Fabian Reuter,freuter@zmtprecision.de,67078,15.11.2024,Industriestraße 12,Düsseldorf,40231,2,H8616501,1
+8,ZMT Precision GmbH,Fabian Reuter,freuter@zmtprecision.de,67078,15.11.2024,Industriestraße 12,Düsseldorf,40231,3,P8321501,1
+9,BauerTech GmbH,Sophie Lehmann,slehmann@bauertech.de,4500741345,15.11.2024,Industriestraße 5,Reutlingen,72760,10,U0400180,8
+10,Steinbach Precision GmbH & Co. KG,Lukas Mertens,einkauf@steinbach-precision.de,241494,15.11.2024,Industriepark 45,Bad Hersfeld,36251,1,15630610,1
+10,Steinbach Precision GmbH & Co. KG,Lukas Mertens,einkauf@steinbach-precision.de,241494,15.11.2024,Industriepark 45,Bad Hersfeld,36251,2,7550391,1
+10,Steinbach Precision GmbH & Co. KG,Lukas Mertens,einkauf@steinbach-precision.de,241494,15.11.2024,Industriepark 45,Bad Hersfeld,36251,3,8560610,1
+10,Steinbach Precision GmbH & Co. KG,Lukas Mertens,einkauf@steinbach-precision.de,241494,15.11.2024,Industriepark 45,Bad Hersfeld,36251,4,8580391,2
+10,Steinbach Precision GmbH & Co. KG,Lukas Mertens,einkauf@steinbach-precision.de,241494,15.11.2024,Industriepark 45,Bad Hersfeld,36251,5,8585501,2
+10,Steinbach Precision GmbH & Co. KG,Lukas Mertens,einkauf@steinbach-precision.de,241494,15.11.2024,Industriepark 45,Bad Hersfeld,36251,6,8585610,2
+10,Steinbach Precision GmbH & Co. KG,Lukas Mertens,einkauf@steinbach-precision.de,241494,15.11.2024,Industriepark 45,Bad Hersfeld,36251,7,8660180,3
+10,Steinbach Precision GmbH & Co. KG,Lukas Mertens,einkauf@steinbach-precision.de,241494,15.11.2024,Industriepark 45,Bad Hersfeld,36251,8,8678501,2
+10,Steinbach Precision GmbH & Co. KG,Lukas Mertens,einkauf@steinbach-precision.de,241494,15.11.2024,Industriepark 45,Bad Hersfeld,36251,9,B570150280,2
+10,Steinbach Precision GmbH & Co. KG,Lukas Mertens,einkauf@steinbach-precision.de,241494,15.11.2024,Industriepark 45,Bad Hersfeld,36251,10,X6561140,2

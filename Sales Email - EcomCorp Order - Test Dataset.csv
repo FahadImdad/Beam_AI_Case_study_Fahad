@@ -1,5 +1,5 @@
-Sales Receipt,Sales Email,Expect Output
-,"Von: Felix Hammerstein fhammerstein@norse-group.com
+Sales Email,,
+"Von: Felix Hammerstein fhammerstein@norse-group.com
 Gesendet: Dienstag, 29. Oktober 2024 14:45
 An: info (DE) info@anhalt-tools.com
 Betreff: Bestellung 4701865321
@@ -28,23 +28,8 @@ Im Gewerbepark 21
 ---
 
 This e-mail may contain confidential and/or privileged information. If you are not the intended recipient (or have received this e-mail in error) please notify the sender immediately and destroy this e-mail. Any unauthorized copying, disclosure or distribution of the material in this e-mail is strictly forbidden. This e-mail address is provided for business correspondence only. It is not to be used for promotional or bulk mail, or given or sold to a third party for any purpose.
-","Buyer:
-• buyer_company_name: NORSE Tech and Innovation Hub GmbH
-• buyer_person_name: Felix Hammerstein
-• buyer_email_address: fhammerstein@norse-hub.com
-
-Order:
-• order_number: 4701865321
-• order_date: 29.10.2024
-• delivery_address_street: Im Gewerbepark 21
-• delivery_address_city: Münster
-• delivery_address_postal_code: 48157
-
-Product:
-• position: 15
-• article_code: Z1387462
-• quantity: 7"
-,"
+",,
+"
 Von: Lena Hoffmeister lhoffmeister@technovac.com
 Gesendet: Dienstag, 28. Oktober 2024 10:35
 An: Jörg Ackermann joerg.ackermann@otta.com
@@ -77,23 +62,8 @@ This e-mail may contain confidential and/or privileged information. If you are n
 
 
 
-","Buyer:
-• buyer_company_name: TECHNOVAC Systems GmbH
-• buyer_person_name: Lena Hoffmeister
-• buyer_email_address: lhoffmeister@technovac.com
-
-Order:
-• order_number: 4704869120
-• order_date: 28.10.2024
-• delivery_address_street: Bahnstrasse 12
-• delivery_address_city: Heathrow
-• delivery_address_postal_code: 87700
-
-Product:
-• position: 10
-• article_code: 12573697
-• quantity: 3"
-,"
+",,
+"
 Von: Matthias Greiner mgreiner@hofbauer-eng.de
 Gesendet: Mittwoch, 30. Oktober 2024 10:15
 An: info (DE) info@otta.com
@@ -133,23 +103,8 @@ Wenn Sie nicht der vorgesehene Adressat dieser E-Mail oder dessen Vertreter sein
 dass jede Form der Kenntnisnahme, Veröffentlichung, Vervielfältigung oder Weitergabe des Inhalts dieser E-Mail
 unzulässig ist. Wir bitten Sie, sich in diesem Fall mit dem Absender der E-Mail in Verbindung zu setzen.
 
-","Buyer:
-• buyer_company_name: Hofbauer Engineering GmbH
-• buyer_person_name: Matthias Greiner
-• buyer_email_address: mgreiner@hofbauer-eng.de
-
-Order:
-• order_number: 478962
-• order_date: 30.10.2024
-• delivery_address_street: Industriestr. 9
-• delivery_address_city: Falkenberg
-• delivery_address_postal_code: 84326
-
-Product:
-• position: 1
-• article_code: X920381742
-• quantity: 3"
-,"
+",,
+"
 Von: Einkauf NT Precision GmbH einkauf@nt-precision.de
 Gesendet: Donnerstag, 14. November 2024 12:52
 An: info (DE) info@otta.com
@@ -188,23 +143,8 @@ Die anhängige Bestellung kann nun an den Lieferanten geschickt werden.
 
 zur Bestellung im Archiv
 
-","Buyer:
-• buyer_company_name: NT Precision GmbH
-• buyer_person_name: Tulia Faber
-• buyer_email_address: tfaber@nt-precision.de
-
-Order:
-• order_number: 2024-08477
-• order_date: 14.11.2024
-• delivery_address_street: Mad-Planck-Straße 10
-• delivery_address_city: Weiden
-• delivery_address_postal_code: 92637
-
-Product:
-• position: 1
-• article_code: X7630260
-• quantity: 3"
-,"
+",,
+"
 Von: Weiss, Lennart lweiss@moeller-tools.de
 Gesendet: Donnerstag, 14. November 2024 14:37
 An: info (DE) info@otta-tools.com
@@ -243,23 +183,8 @@ This Email communication (and any attachment/s) are confidential and are intende
 
 
 
-","Buyer:
-• buyer_company_name: Möller Industrial Tools GmbH
-• buyer_person_name: Lennart Weiss
-• buyer_email_address: lweiss@moeller-tools.de
-
-Order:
-• order_number: 202482519
-• order_date: 14.11.2024
-• delivery_address_street: Werkstr. 19
-• delivery_address_city: Ludwigshafen
-• delivery_address_postal_code: 67059
-
-Product:
-• position: 1
-• article_code: P45233180
-• quantity: 100"
-,"
+",,
+"
 Von: Hartmann, Nico nhartmann@weber-tools.com
 Gesendet: Donnerstag, 14. November 2024 12:39
 An: Oschlies Andrea Andrea.Oschlies@otta.de
@@ -301,27 +226,8 @@ Diese E-Mail Nachricht enthält vertrauliche und/oder rechtlich geschützte Inform
 
 
 
-","Buyer:
-• buyer_company_name: Weber Tools GmbH
-• buyer_person_name: Nico Hartmann
-• buyer_email_address: nhartmann@weber-tools.com
-
-Order:
-• order_number: 143632
-• order_date: 14.11.2024
-• delivery_address_street: Bergstraße 42
-• delivery_address_city: Darmstadt
-• delivery_address_postal_code: 64293
-
-Product:
-• position: 1
-• article_code: F8723491
-• quantity: 2
-
-• position: 2
-• article_code: T6589204
-• quantity: 2"
-,"
+",,
+"
 Von: Schneider Metallbau GmbH - Produktion produktion@schneider-metall.de
 Gesendet: Donnerstag, 14. November 2024 13:56
 An: Oschlies Andrea Andrea.Oschlies@otta.de
@@ -354,27 +260,8 @@ Hafenstraße 78, 20457 Hamburg, Germanywww.schneider-metall.de
 Firma: Schneider Metallbau GmbH | Sitz: Hamburg | Registergericht: Hamburg | Handelsregisternummer: HRB 9274 |
 Geschäftsführer: Dipl. Ing. Michael Schneider
 
-","Buyer:
-• buyer_company_name: Schneider Metallbau GmbH
-• buyer_person_name: David Lehmann
-• buyer_email_address: produktion@schneider-metall.de
-
-Order:
-• order_number: 24-3213-01
-• order_date: 14.11.2024
-• delivery_address_street: Hafenstraße 78
-• delivery_address_city: Hamburg
-• delivery_address_postal_code: 20457
-
-Product:
-• position: 1
-• article_code: P8420610
-• quantity: 5
-
-• position: 2
-• article_code: P8420501
-• quantity: 2"
-,"
+",,
+"
 Von: Fabian Reuter freuter@zmtprecision.de
 Gesendet: Freitag, 15. November 2024 09:29:40 (UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna
 An: Pickelmann Sebastian sebastian.pickelmann@otta.de
@@ -403,31 +290,8 @@ Stadt-Sparkasse Düsseldorf
 Geschäftsführer Alexander Kramer
 HRB 78612 AG Düsseldorf
 USt.-IdNr.: DE294872651
-Steuernummer 135/8572/0192http://www.zmtprecision.de","Buyer:
-• buyer_company_name: ZMT Precision GmbH
-• buyer_person_name: Fabian Reuter
-• buyer_email_address: freuter@zmtprecision.de
-
-Order:
-• order_number: 67078
-• order_date: 15.11.2024
-• delivery_address_street: Industriestraße 12
-• delivery_address_city: Düsseldorf
-• delivery_address_postal_code: 40231
-
-Product:
-• position: 1
-• article_code: W50410008
-• quantity: 20
-
-• position: 2
-• article_code: H8616501
-• quantity: 1
-
-• position: 3
-• article_code: P8321501
-• quantity: 1"
-,"
+Steuernummer 135/8572/0192http://www.zmtprecision.de",,
+"
 Von: Lehmann, Sophie slehmann@bauertech.de
 Gesendet: Freitag, 15. November 2024 09:56
 An: info (DE) info@otta.de
@@ -464,23 +328,8 @@ Sitz der Gesellschaft: Reutlingen; Amtsgericht Stuttgart HRB 674328
 Geschäftsführende Gesellschafterinnen: Kathrin Beck, Nina Hofmann
 Geschäftsführung: Henner Weiss, Michael Arndt
 
-","Buyer:
-• buyer_company_name: BauerTech GmbH
-• buyer_person_name: Sophie Lehmann
-• buyer_email_address: slehmann@bauertech.de
-
-Order:
-• order_number: 4500741345
-• order_date: 15.11.2024
-• delivery_address_street: Industriestraße 5
-• delivery_address_city: Reutlingen
-• delivery_address_postal_code: 72760
-
-Product:
-• position: 10
-• article_code: U0400180
-• quantity: 8"
-,"
+",,
+"
 Von: Einkauf einkauf@steinbach-precision.de
 Gesendet: Freitag, 15. November 2024 20:08:55 (UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna
 An: Kalpakidou Kiriaki
@@ -504,55 +353,7 @@ Auf allen Formularen sind folgende Angaben zwingend anzugeben:
 - unsere Artikelnummer
 - Zeichnungsnummer mit aktuellem Index
 
-","Buyer:
-• buyer_company_name: Steinbach Precision GmbH & Co. KG
-• buyer_person_name: Lukas Mertens
-• buyer_email_address: einkauf@steinbach-precision.de
-
-Order:
-• order_number: 241494
-• order_date: 15.11.2024
-• delivery_address_street: Industriepark 45
-• delivery_address_city: Bad Hersfeld
-• delivery_address_postal_code: 36251
-
-Products:
-• position: 1
-• article_code: 15630610
-• quantity: 1
-
-• position: 2
-• article_code: 7550391
-• quantity: 1
-
-• position: 3
-• article_code: 8560610
-• quantity: 1
-
-• position: 4
-• article_code: 8580391
-• quantity: 2
-
-• position: 5
-• article_code: 8585501
-• quantity: 2
-
-• position: 6
-• article_code: 8585610
-• quantity: 2
-
-• position: 7
-• article_code: 8660180
-• quantity: 3
-
-• position: 8
-• article_code: 8678501
-• quantity: 2
-
-• position: 9
-• article_code: B570150280
-• quantity: 2
-
-• position: 10
-• article_code: X6561140
-• quantity: 2"
+",,
+,,
+,,
+,buyer_company_name,buyer_email_address
