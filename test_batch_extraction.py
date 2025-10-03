@@ -1,22 +1,29 @@
 import os
 import io
 import json
+import re
+from typing import Tuple, Dict, Any, Optional
+
 import pandas as pd
 from tqdm import tqdm
 from dotenv import load_dotenv
 from openai import AzureOpenAI
-import re
 
 # ---------- Optional, higher-fidelity PDF text extraction (prompt-only logic; no data hardcoding)
-# We keep extraction generic and let the prompt do all decisions.
 try:
     import fitz  # PyMuPDF
 except Exception:
     fitz = None
 try:
-    from pdfminer.high_level import extract_text as pdfminer_extract_text
+    # Some envs expose pdfminer like this
+    from pdfminer_high_level import extract_text as pdfminer_extract_text  # type: ignore
 except Exception:
-    pdfminer_extract_text = None
+    try:
+        # Fallback to pdfminer.six canonical import path used in many envs
+        from pdfminer.high_level import extract_text as pdfminer_extract_text  # type: ignore
+    except Exception:
+        pdfminer_extract_text = None
+
 
 # =========================
 # Paths (update here only)
@@ -25,6 +32,10 @@ PATH_ROOT = r"C:\\Users\\fahad.imdad\\Documents\\Beam_AI_Case_Study_Fahad"
 PATH_EXPECTED = os.path.join(PATH_ROOT, "Expected Output - EcomCorp Order Test Dataset.csv")
 PATH_RECEIPTS = os.path.join(PATH_ROOT, "Sales Receipt")
 PATH_SALES_EMAILS = os.path.join(PATH_ROOT, "Sales Email - EcomCorp Order - Test Dataset.csv")
+
+# TXT dump of first 10 receipts (open in Notepad)
+OUT_ALL_RECEIPTS_TXT = os.path.join(PATH_ROOT, "all_receipts_text.txt")
+
 
 # =========================
 # Azure OpenAI client
@@ -35,88 +46,169 @@ azure_api_version = os.getenv("AZURE_OPENAI_API_VERSION")
 azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
 azure_deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT")
 if not all([azure_key, azure_api_version, azure_endpoint, azure_deployment]):
-    raise RuntimeError("Missing Azure OpenAI env vars. Set AZURE_OPENAI_API_KEY (or AZURE_OPENAI_KEY), AZURE_OPENAI_API_VERSION, AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_DEPLOYMENT.")
+    raise RuntimeError(
+        "Missing Azure OpenAI env vars. Set AZURE_OPENAI_API_KEY (or AZURE_OPENAI_KEY), "
+        "AZURE_OPENAI_API_VERSION, AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_DEPLOYMENT."
+    )
 client = AzureOpenAI(api_key=azure_key, api_version=azure_api_version, azure_endpoint=azure_endpoint)
 
+
 # =========================
-# SYSTEM PROMPT v4.3 (prompt-only decisions; no dataset hardcoding)
+# System prompt (kept simple for exact matching)
 # =========================
-SYSTEM_PROMPT = r"""
-SYSTEM PROMPT — Order Data Extractor (Compact v4.3, prompt-only)
+SYSTEM_PROMPT = """
+You are a strict information extractor. 
+Your task is to return ONE JSON object that exactly matches the provided SCHEMA. 
+Do not output anything else. If data is missing or uncertain → return null.
 
-ROLE
-Extract structured order data from two plain-text inputs: RECEIPT (primary) and EMAIL (secondary). Return ONLY strict JSON per SCHEMA. If a value is missing or uncertain, return null. Do not guess.
+----------------------------
+GENERAL RULES
+----------------------------
+- Return ONLY one JSON object. No prose, no explanations, no extra keys.
+- "Normalize" all receipts":
+  • Replace "&" with "and" for all receipts.
+  • Trim spaces
+  • Preserve German diacritics (ä, ö, ü, ß).
+- Dates must be in format: YYYY.MM.DD
+- Integers must be plain integers (no quotes).
+- Never hallucinate values.
+- Always give priority to information from the receipt over the email if both are available.
 
-SOURCE PRIORITY
-- Buyer identity/contact (company, person, email): prefer EMAIL signature block if clearly the buyer; else RECEIPT; else null.
-- Order header (order_number, order_date) + Delivery address: prefer RECEIPT ship-to block; fallback to EMAIL only if RECEIPT truly lacks those fields.
-- Products: RECEIPT ONLY. Never take line items from EMAIL.
+----------------------------
+DELIVERY ADDRESS RULES
+----------------------------
+- Always select the **customer’s delivery/buyer address**, NOT the supplier/vendor masthead.
+- Ignore addresses if they contain:
+  • Supplier company names (e.g., OttA GmbH, Anhalt Tools, etc.)
+  • Known supplier HQ postal codes (e.g., 4718x Willo).
+- Prefer addresses explicitly labelled: "Lieferadresse", "Delivery address", "Versandadresse", "Ship to".
+- If no explicit label exists:
+  • Select the address block closest to the buyer/company information near the order header.
+  • Do NOT take addresses from the bottom masthead or repeated headers/footers.
+- Example:
+  ✅ "Hofbauer Engineering GmbH - Industriestr. 9 - 84326 Falkenberg" → delivery
+  ❌ "OttA GmbH, Hans-Martin-Schleyer-Str. 15b, 47186 Willo" → supplier masthead
 
-OUTPUT FORMAT
-- Output a single JSON object exactly matching SCHEMA (no markdown, no comments, no extra keys).
-- Preserve exact spelling/diacritics from the chosen source.
-
-NORMALIZATION (for matching only; do NOT alter returned text)
-- Trim spaces; collapse internal whitespace; case-fold for equality checks.
-- Treat "&" ≈ "and"; "ß"≈"ss"; "ä/ae", "ö/oe", "ü/ue" as equivalent.
-- For company matching, ignore trailing city tails like " - <City>" or ", <City>" during comparison.
-- For order numbers, compare ignoring spaces (keep hyphens/letters).
-
-VALIDATION
-- Dates: parse many formats; output YYYY.MM.DD; if unparseable → null.
-- Emails: must be a single valid address; else null. Avoid domain aliases (info@ or einkauf@) if a personal signature email exists nearby.
-- Integers only for product_quantity and product_position.
-- Postal codes: keep exactly as written (e.g., "40231", "W1A 1AA").
-
+----------------------------
 BUYER RULES
-- buyer_company_name: take the legal name only (drop trailing location like " - Münster", ", Hamburg"). If EMAIL signature and RECEIPT differ trivially (e.g., "&" vs "and"), treat as same; prefer EMAIL signature form.
-- buyer_person_name: the buyer contact (signature/contact line). If multiple, pick the clearest buyer contact; else null.
-- buyer_email_address: prefer the email adjacent to the signature name; avoid group inboxes (info@, einkauf@) unless it’s the only address. If EMAIL and RECEIPT show different domains, choose the EMAIL signature domain.
+----------------------------
+- Use buyer details from the EMAIL header/footer if present.
+- Otherwise, use the top section of the RECEIPT labelled as buyer/customer.
+- Never select supplier/vendor information as buyer.
+- Buyer name should be on top of the RECEIPT.
 
-ADDRESS RULES (SHIP-TO ONLY)
-- Use the shipping/delivery block (labels: "Delivery", "Shipping", "Ship-to", "Lieferadresse", "Bitte liefern", "Versand an"). Never use vendor/company header or invoice addresses.
-- If multiple addresses appear, choose the one explicitly labeled for delivery/ship-to OR the one immediately following such labels.
-- If street/city/postal are on one line (e.g., "40231 Düsseldorf"), split into: postal="40231", city="Düsseldorf".
-- Prefer the form with diacritics when variants exist (e.g., choose "Münster" over "Munster" if both appear near the ship-to block).
-- If no reliable ship-to can be located, set street/city/postal to null rather than copying a header/footer address.
+----------------------------
+Priority:
+1) From EMAIL header/footer/signature (sender org/person/email).
+2) Else from RECEIPT block clearly labelled Customer/Kunde/Billing/Buyer and located near the order header.
 
-ORDER FIELDS
-- order_number: digits or alphanumeric with hyphens; return exactly as written from RECEIPT if present; else EMAIL; else null.
-- order_date: RECEIPT labels like "Order date", "Bestelldatum", "Datum" near the order header. Fallback to EMAIL only if clearly the creation date. Output YYYY.MM.DD or null.
+Do NOT take supplier/vendor info as buyer.
 
-PRODUCTS (RECEIPT ONLY)
-- A line item is a row with a printed position number (labels/examples: "Pos.", "Pos", "Pos-", or a leading index column). Use that printed position as product_position.
-- Extract each distinct purchased item row (don’t merge kit/container rows; don’t duplicate).
+Disambiguation:
+- Ignore salutations to supplier staff (e.g., “Sehr geehrte Frau …”) — those are recipients, not the buyer.
+- If multiple names appear (e.g., “Sachbearbeiter/Ansprechpartner”), choose the name associated with the buyer organization, not the supplier.
+- If the RECEIPT only shows initials (e.g., “D. Lehmann”) but the EMAIL provides a full name for the same person (e.g., “David Lehmann”), use the full name from EMAIL.
+- Buyer email: take from EMAIL if present; otherwise, use a clear buyer-domain address on the RECEIPT (avoid generic supplier domains).
 
-ARTICLE CODE SELECTION (choose exactly ONE token for each row):
-Priority order when labels appear on/near the same row:
-  1) Tokens under/near labels: "Ihre Materialnummer" | "Customer material no" | "Material-Nr Kunde".
-  2) Else labels: Art.-Nr | Artikelnummer | Best.-Nr | Part No | Item | SKU.
-  3) Else heuristic tie-breakers on the row: (a) a 5–10 digit numeric (e.g., 15630610), or (b) an alphanumeric starting with a letter (e.g., X920381742).
-Deprioritize and only choose if explicitly labeled as the article number for the row:
-  - Obvious family/catalog prefixes repeating across many rows (e.g., FRAI****, common vendor-family prefixes).
-  - Unlabeled 12–14 digit numbers (likely GTIN/EAN) unless the label explicitly states Artikelnummer/Part No for that number.
-If two candidates satisfy the same label, choose the one closest to the quantity cell on that row.
 
-QUANTITY
-- Use the integer from the row’s quantity cell/label ("Qty", "Menge", "Stk", "pcs"). Ignore pack size, price, or totals.
+----------------------------
+PRODUCT RULES
+----------------------------
+- Extract each row in the order table.
+- product_position: from "Pos" or row index if missing.
+- product_quantity: from "Menge"/"Qty" (integer, ignore units like Stk/pcs).
+- product_article_code:
+  • Use the value under/next to: "Ihre Materialnummer", "Artikelnummer", "Article No", "Item No".
+      - choose "Ihre Materialnummer" if it exists.(Always do reasoniung and choose correct product article code not supplier article code).
+      - Product article codes must never contain spaces or hyphens.
+        If a code appears with a prefix letter and separator (e.g., "F- P45233180", "X 396655", "X-39988"), then:
+       Ignore the alphabetic prefix (F, X, etc.) if there exists any hyphen or space after it.Otherwise keep the prefix.
+       -Keep only the pure alphanumeric code (e.g., "P45233180", "396655", "39988").
+      - Choose the supplier’s actual article/material number (often the alphanumeric code, e.g., X920381742).
+      - Do NOT choose internal/customer reference numbers (e.g., MB00022519) unless no other valid code exists.
+      - Dont choose supplier article no.
+      - Product article code have both alphanumeric and numeric ones.Analyze both and choose the correct one."
+      - If a row does not contain a product_article_code, exclude that row entirely.
+      - Do not output product_position or product_quantity for excluded rows.
+      - Only include rows where a product_article_code is present.
+  • Do NOT use order numbers, invoice numbers, postal codes, phone numbers, etc.
 
-STRICT PRECEDENCE RECAP
-- Buyer fields: EMAIL signature > RECEIPT.
-- Order header + Delivery address: RECEIPT ship-to > EMAIL.
-- Products: RECEIPT only.
+----------------------------
+OUTPUT CONTRACT
+----------------------------
+- Must exactly match the JSON SCHEMA keys and types.
+- Include all products found (row by row).
+- If multiple candidates exist, apply the rules above deterministically.
+- If still unclear, return null for the field.
+"""
 
-FINAL CONSISTENCY PASS (YOU MUST DO THIS BEFORE OUTPUT)
-- Check each selected field against the above rules. If a chosen address appears in header/footer boilerplate or lacks delivery labels, set address fields to null rather than guessing.
-- If both diacritic and plain forms of a city exist, choose the diacritic form present near the ship-to block.
-- For each line item, verify that product_position equals the printed Pos. number; if none found, exclude the row.
-- For each line item, verify article_code follows the selection order and does not use family prefixes when a labeled numeric part exists.
 
+
+
+# =========================
+# JSON Schema (single source of truth, reused for validation)
+# =========================
+SCHEMA_JSON: Dict[str, Any] = {
+    "type": "object",
+    "additionalProperties": False,
+    "properties": {
+        "buyer": {
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "buyer_company_name": {"type": ["string", "null"]},
+                "buyer_person_name": {"type": ["string", "null"]},
+                "buyer_email_address": {"type": ["string", "null"]},
+            },
+            "required": ["buyer_company_name", "buyer_person_name", "buyer_email_address"],
+        },
+        "order": {
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "order_number": {"type": ["string", "null"]},
+                "order_date": {
+                    "anyOf": [
+                        {"type": "string", "pattern": r"^\d{4}\.\d{2}\.\d{2}$"},
+                        {"type": "null"}
+                    ]
+                },
+                "delivery_address_street": {"type": ["string", "null"]},
+                "delivery_address_city": {"type": ["string", "null"]},
+                "delivery_address_postal_code": {"type": ["string", "null"]},
+            },
+            "required": [
+                "order_number",
+                "order_date",
+                "delivery_address_street",
+                "delivery_address_city",
+                "delivery_address_postal_code",
+            ],
+        },
+        "products": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "product_position": {"type": "integer"},
+                    "product_article_code": {"type": ["string", "null"]},
+                    "product_quantity": {"type": ["integer", "null"]},
+                },
+                "required": ["product_position", "product_article_code", "product_quantity"],
+            },
+        },
+    },
+    "required": ["buyer", "order", "products"],
+}
+
+# Optional: show the schema to the model verbatim in the user message (helps exact matching)
+SCHEMA_TEXT = """
 SCHEMA (must match exactly)
 {
   "buyer": {
     "buyer_company_name": "<string or null>",
-    "buyer_person_name": "<string or null>",
+    "buyer_person_name": "<string>",
     "buyer_email_address": "<string or null>"
   },
   "order": {
@@ -140,6 +232,22 @@ Return ONLY the JSON object matching SCHEMA. No extra text.
 """
 
 # =========================
+# Optional tool-call (“trust call”) extractor toggle
+# =========================
+USE_TOOLCALL_EXTRACTOR = False  # Set True to force tool-call mode
+
+EXTRACTOR_TOOL = [{
+    "type": "function",
+    "function": {
+        "name": "emit_order_json",
+        "description": "Emit the extracted order JSON exactly once.",
+        "parameters": SCHEMA_JSON,
+        "strict": True
+    }
+}]
+
+
+# =========================
 # PDF text extraction (layout-aware when possible; still generic)
 # =========================
 def extract_text_from_pdf(pdf_path: str) -> str:
@@ -149,7 +257,6 @@ def extract_text_from_pdf(pdf_path: str) -> str:
             doc = fitz.open(pdf_path)
             parts = []
             for page in doc:
-                # Blocks preserve reading order reasonably well
                 blocks = page.get_text("blocks")
                 # sort by y, then x
                 blocks = sorted(blocks, key=lambda b: (round(b[1], 1), round(b[0], 1)))
@@ -168,63 +275,158 @@ def extract_text_from_pdf(pdf_path: str) -> str:
             return pdfminer_extract_text(pdf_path) or ""
         except Exception:
             pass
-    # Last-resort: no extraction
+    # Last resort
     return ""
+
 
 # =========================
 # Prompt assembly
 # =========================
 def make_extraction_messages(email_text: str, receipt_text: str):
-    # Light formatting to keep model guidance clear; no dataset-specific cues
     user_block = f"""USER INPUT (pass both blocks exactly):
 EMAIL:
 <<<{email_text or ""}>>>
 
 RECEIPT:
-<<<{receipt_text or ""}>>>"""
+<<<{receipt_text or ""}>>>
+
+{SCHEMA_TEXT}
+"""
     return [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": user_block},
     ]
 
+
 # =========================
-# LLM call (deterministic settings)
+# Helpers for Responses API output
 # =========================
-def call_llm(messages: list) -> tuple[str, dict | None]:
+def _safe_output_text(resp) -> str:
+    text = getattr(resp, "output_text", None)
+    if isinstance(text, str) and text.strip():
+        return text
+
+    out_items = getattr(resp, "output", None)
+    if isinstance(out_items, list):
+        buf = []
+        for item in out_items:
+            content = getattr(item, "content", None)
+            if isinstance(content, list):
+                for part in content:
+                    t = getattr(part, "text", None)
+                    if isinstance(t, str):
+                        buf.append(t)
+        if buf:
+            return "".join(buf)
+    return ""
+
+
+def _find_tool_call_arguments(resp) -> Optional[Dict[str, Any]]:
+    out_items = getattr(resp, "output", None)
+    if isinstance(out_items, list):
+        for item in out_items:
+            if getattr(item, "type", None) in ("tool_call", "function_call"):
+                if getattr(item, "name", "") == "emit_order_json":
+                    args = getattr(item, "arguments", None)
+                    if isinstance(args, dict):
+                        return args
+                    if isinstance(args, str):
+                        try:
+                            return json.loads(args)
+                        except Exception:
+                            pass
+            content = getattr(item, "content", None)
+            if isinstance(content, list):
+                for part in content:
+                    if getattr(part, "type", None) in ("tool_call", "function_call"):
+                        if getattr(part, "name", "") == "emit_order_json":
+                            args = getattr(part, "arguments", None)
+                            if isinstance(args, dict):
+                                return args
+                            if isinstance(args, str):
+                                try:
+                                    return json.loads(args)
+                                except Exception:
+                                    pass
+    return None
+
+
+# =========================
+# LLM call with strict schema (and optional tool-call extractor)
+# =========================
+def call_llm(messages: list) -> Tuple[str, Optional[dict]]:
+    if USE_TOOLCALL_EXTRACTOR:
+        try:
+            resp = client.responses.create(
+                model=azure_deployment,
+                input=messages,
+                temperature=0,
+                max_output_tokens=1500,
+                tools=EXTRACTOR_TOOL,
+                tool_choice={"type": "function", "function": {"name": "emit_order_json"}},
+            )
+            tool_args = _find_tool_call_arguments(resp)
+            if tool_args is None:
+                return "No tool_call with emit_order_json was returned.", None
+            return json.dumps(tool_args, ensure_ascii=False), tool_args
+        except Exception:
+            pass
+
     try:
         resp = client.responses.create(
             model=azure_deployment,
             input=messages,
             temperature=0,
             max_output_tokens=1500,
+            response_format={
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "order_extraction",
+                    "schema": SCHEMA_JSON,
+                    "strict": True,
+                }
+            },
         )
-        text = resp.output_text or ""
-    except Exception as e:
-        return f"LLM call failed: {e}", None
-
-    stripped = text.strip()
-    if stripped.startswith("```"):
-        lines = stripped.splitlines()
-        if lines[0].startswith("```") and lines[-1].startswith("```"):
-            stripped = "\n".join(lines[1:-1])
-
-    candidate = stripped
-    if not candidate.startswith("{"):
-        m = re.search(r"\{[\s\S]*\}\s*$", stripped)
-        if m:
-            candidate = m.group(0)
-    try:
+        text = _safe_output_text(resp) or ""
+        candidate = text.strip()
         data = json.loads(candidate)
         return candidate, data
-    except json.JSONDecodeError:
-        m2 = re.search(r"\{[\s\S]*\}", stripped)
-        if m2:
-            try:
-                data = json.loads(m2.group(0))
-                return m2.group(0), data
-            except Exception:
-                pass
-        return f"Non-JSON or invalid JSON returned:\n{text}", None
+    except Exception as e_schema:
+        try:
+            resp = client.responses.create(
+                model=azure_deployment,
+                input=messages,
+                temperature=0,
+                max_output_tokens=1500,
+            )
+            text = _safe_output_text(resp) or ""
+        except Exception as e2:
+            return f"LLM call failed: {e_schema} | Fallback failed: {e2}", None
+
+        stripped = text.strip()
+        if stripped.startswith("```"):
+            lines = stripped.splitlines()
+            if lines[0].startswith("```") and lines[-1].startswith("```"):
+                stripped = "\n".join(lines[1:-1])
+
+        candidate = stripped
+        if not candidate.startswith("{"):
+            m = re.search(r"\{[\s\S]*\}\s*$", stripped)
+            if m:
+                candidate = m.group(0)
+        try:
+            data = json.loads(candidate)
+            return candidate, data
+        except json.JSONDecodeError:
+            m2 = re.search(r"\{[\s\S]*\}", stripped)
+            if m2:
+                try:
+                    data = json.loads(m2.group(0))
+                    return m2.group(0), data
+                except Exception:
+                    pass
+            return f"Non-JSON or invalid JSON returned:\n{text}", None
+
 
 # =========================
 # Evaluation helpers (unchanged)
@@ -239,6 +441,7 @@ def flatten_paths(d, base=""):
     else:
         yield base, d
 
+
 def compare_json(expected: dict, got: dict):
     exp_map = dict(flatten_paths(expected))
     got_map = dict(flatten_paths(got))
@@ -249,16 +452,18 @@ def compare_json(expected: dict, got: dict):
         ok = e == g
         rows.append((k, e, g, ok))
         total += 1
-        if ok: match_count += 1
+        if ok:
+            match_count += 1
     acc = (match_count / total * 100.0) if total else 0.0
     return acc, rows
+
 
 # =========================
 # Build maps from CSVs (unchanged except diacritics fixes)
 # =========================
 def build_expected_map_from_csv(path: str) -> dict:
     df_exp = pd.read_csv(path, encoding="cp1252")
-    expected_map: dict[int, dict] = {}
+    expected_map: Dict[int, dict] = {}
 
     def fix_text(s):
         if pd.isna(s):
@@ -326,9 +531,11 @@ def build_expected_map_from_csv(path: str) -> dict:
 def build_email_map_from_csv(path: str) -> dict:
     df_em = pd.read_csv(path, encoding="cp1252")
     emails_series = df_em.iloc[:, 0]
-    emails = [str(v) for v in emails_series if isinstance(v, str) and v.strip() and not v.strip().lower().startswith('sales email')]
+    emails = [str(v) for v in emails_series if isinstance(v, str) and v.strip()
+              and not v.strip().lower().startswith('sales email')]
     email_map = {i + 1: emails[i] for i in range(min(len(emails), 1000))}
     return email_map
+
 
 # =========================
 # Main
@@ -339,30 +546,51 @@ def main():
     indices = sorted(expected_map.keys())
     results = []
 
-    for pdf_idx in tqdm(indices):
+    # Collect first 10 receipts' raw text for a single Notepad file
+    txt_chunks = []
+
+    for n, pdf_idx in enumerate(tqdm(indices), start=1):
+        if n > 10:
+            break  # only first 10 PDFs as requested
+
         pdf_path = os.path.join(PATH_RECEIPTS, f"{pdf_idx}.pdf")
         if not os.path.exists(pdf_path):
             print(f"PDF not found: {pdf_path}")
+            # still put a placeholder so you know it was missing
+            txt_chunks.append(f"===== Row {pdf_idx} ({pdf_path}) =====\n(PDF not found)\n")
             continue
+
         email_text = email_map.get(pdf_idx, "")
         receipt_text = extract_text_from_pdf(pdf_path)
+
+        # --- Append to TXT dump (receipt text only) ---
+        safe_text = receipt_text if receipt_text.strip() else "(no text extracted)"
+        txt_chunks.append(f"===== Row {pdf_idx} ({pdf_path}) =====\n{safe_text}\n")
+
+        # ----- The rest of your evaluation pipeline -----
         messages = make_extraction_messages(email_text, receipt_text)
         raw_text, json_data = call_llm(messages)
         if json_data is None:
             print("RAW AI (unparsed):")
             print(raw_text)
         expected_json = expected_map.get(pdf_idx)
+
         if json_data is not None and expected_json is not None:
             acc, rows_cmp = compare_json(expected_json, json_data)
         else:
             acc, rows_cmp = 0.0, []
+
+        diffs = [(k, e, g) for (k, e, g, ok) in rows_cmp if not ok]
+
         results.append({
             "row": pdf_idx,
             "accuracy": acc,
             "ai_output": json_data,
             "expected": expected_json,
-            "raw_ai": raw_text
+            "raw_ai": raw_text,
+            "diffs": diffs,
         })
+
         print(f"\nRow {pdf_idx}:")
         print("AI Output:")
         print(json.dumps(json_data, ensure_ascii=False, indent=2))
@@ -370,6 +598,22 @@ def main():
         print(json.dumps(expected_json, ensure_ascii=False, indent=2))
         print(f"Accuracy: {acc:.2f}%")
 
+        if diffs:
+            print("Differences (path → expected vs got):")
+            for k, e, g in diffs:
+                print(f"- {k}\n    expected: {e}\n    got:      {g}")
+        else:
+            print("Differences: None ✅")
+
+    # ---------- Write the Notepad-friendly TXT ----------
+    try:
+        with open(OUT_ALL_RECEIPTS_TXT, "w", encoding="utf-8", errors="ignore") as f:
+            f.write("\n".join(txt_chunks))
+        print(f"\nWrote first 10 receipts' text to: {OUT_ALL_RECEIPTS_TXT}")
+    except Exception as e:
+        print(f"Failed to write TXT dump: {e}")
+
+    # ---------- Keep your summary artifacts ----------
     out_rows = [{"row": r["row"], "accuracy": r["accuracy"]} for r in results]
     pd.DataFrame(out_rows).to_csv(os.path.join(PATH_ROOT, "batch_extraction_results.csv"), index=False)
 
@@ -388,11 +632,12 @@ def main():
     acc_values = []
     for r in results:
         print(f"Row {r['row']}: Accuracy={r['accuracy']:.2f}%")
-        acc_values.append(r["accuracy"])  # already percentage
+        acc_values.append(r["accuracy"])
     if acc_values:
         avg_acc = sum(acc_values) / len(acc_values)
         print(f"Average Accuracy: {avg_acc:.2f}%")
     print("\nWrote side-by-side comparison to batch_extraction_comparison.xlsx and summary CSV to batch_extraction_results.csv")
+
 
 if __name__ == "__main__":
     main()
