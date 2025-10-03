@@ -3,18 +3,32 @@ import io
 import json
 import pandas as pd
 from tqdm import tqdm
-from pypdf import PdfReader
 from dotenv import load_dotenv
 from openai import AzureOpenAI
 import re
 
-# Absolute paths (update here if your paths change)
-PATH_ROOT = r"C:\Users\fahad.imdad\Documents\Beam_AI_Case_Study_Fahad"
+# ---------- Optional, higher-fidelity PDF text extraction (prompt-only logic; no data hardcoding)
+# We keep extraction generic and let the prompt do all decisions.
+try:
+    import fitz  # PyMuPDF
+except Exception:
+    fitz = None
+try:
+    from pdfminer.high_level import extract_text as pdfminer_extract_text
+except Exception:
+    pdfminer_extract_text = None
+
+# =========================
+# Paths (update here only)
+# =========================
+PATH_ROOT = r"C:\\Users\\fahad.imdad\\Documents\\Beam_AI_Case_Study_Fahad"
 PATH_EXPECTED = os.path.join(PATH_ROOT, "Expected Output - EcomCorp Order Test Dataset.csv")
 PATH_RECEIPTS = os.path.join(PATH_ROOT, "Sales Receipt")
 PATH_SALES_EMAILS = os.path.join(PATH_ROOT, "Sales Email - EcomCorp Order - Test Dataset.csv")
 
-# Load environment variables and initialize Azure OpenAI client
+# =========================
+# Azure OpenAI client
+# =========================
 load_dotenv()
 azure_key = os.getenv("AZURE_OPENAI_API_KEY") or os.getenv("AZURE_OPENAI_KEY")
 azure_api_version = os.getenv("AZURE_OPENAI_API_VERSION")
@@ -24,16 +38,18 @@ if not all([azure_key, azure_api_version, azure_endpoint, azure_deployment]):
     raise RuntimeError("Missing Azure OpenAI env vars. Set AZURE_OPENAI_API_KEY (or AZURE_OPENAI_KEY), AZURE_OPENAI_API_VERSION, AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_DEPLOYMENT.")
 client = AzureOpenAI(api_key=azure_key, api_version=azure_api_version, azure_endpoint=azure_endpoint)
 
-# Import or copy the SYSTEM_PROMPT and comparison logic from app.py
-SYSTEM_PROMPT = """
-SYSTEM PROMPT — Order Data Extractor (Compact v3)
+# =========================
+# SYSTEM PROMPT v4.3 (prompt-only decisions; no dataset hardcoding)
+# =========================
+SYSTEM_PROMPT = r"""
+SYSTEM PROMPT — Order Data Extractor (Compact v4.3, prompt-only)
 
 ROLE
 Extract structured order data from two plain-text inputs: RECEIPT (primary) and EMAIL (secondary). Return ONLY strict JSON per SCHEMA. If a value is missing or uncertain, return null. Do not guess.
 
 SOURCE PRIORITY
 - Buyer identity/contact (company, person, email): prefer EMAIL signature block if clearly the buyer; else RECEIPT; else null.
-- Order header (order_number, order_date) + Delivery address: prefer RECEIPT; fallback to EMAIL if missing.
+- Order header (order_number, order_date) + Delivery address: prefer RECEIPT ship-to block; fallback to EMAIL only if RECEIPT truly lacks those fields.
 - Products: RECEIPT ONLY. Never take line items from EMAIL.
 
 OUTPUT FORMAT
@@ -48,39 +64,53 @@ NORMALIZATION (for matching only; do NOT alter returned text)
 
 VALIDATION
 - Dates: parse many formats; output YYYY.MM.DD; if unparseable → null.
-- Emails: must be a single valid address; else null.
+- Emails: must be a single valid address; else null. Avoid domain aliases (info@ or einkauf@) if a personal signature email exists nearby.
 - Integers only for product_quantity and product_position.
 - Postal codes: keep exactly as written (e.g., "40231", "W1A 1AA").
 
 BUYER RULES
 - buyer_company_name: take the legal name only (drop trailing location like " - Münster", ", Hamburg"). If EMAIL signature and RECEIPT differ trivially (e.g., "&" vs "and"), treat as same; prefer EMAIL signature form.
 - buyer_person_name: the buyer contact (signature/contact line). If multiple, pick the clearest buyer contact; else null.
-- buyer_email_address: prefer the email adjacent to the signature name; avoid group inboxes (info@, einkauf@) unless it’s the only address.
+- buyer_email_address: prefer the email adjacent to the signature name; avoid group inboxes (info@, einkauf@) unless it’s the only address. If EMAIL and RECEIPT show different domains, choose the EMAIL signature domain.
 
-ADDRESS RULES
-- Use the shipping/delivery block (e.g., "Delivery", "Shipping", "Lieferadresse"); never the seller’s address.
+ADDRESS RULES (SHIP-TO ONLY)
+- Use the shipping/delivery block (labels: "Delivery", "Shipping", "Ship-to", "Lieferadresse", "Bitte liefern", "Versand an"). Never use vendor/company header or invoice addresses.
+- If multiple addresses appear, choose the one explicitly labeled for delivery/ship-to OR the one immediately following such labels.
 - If street/city/postal are on one line (e.g., "40231 Düsseldorf"), split into: postal="40231", city="Düsseldorf".
-- Prefer the form with diacritics when variants exist.
+- Prefer the form with diacritics when variants exist (e.g., choose "Münster" over "Munster" if both appear near the ship-to block).
+- If no reliable ship-to can be located, set street/city/postal to null rather than copying a header/footer address.
 
 ORDER FIELDS
 - order_number: digits or alphanumeric with hyphens; return exactly as written from RECEIPT if present; else EMAIL; else null.
-- order_date: RECEIPT labels like "Order date", "Bestelldatum", "Datum" (choose the one nearest the order header). Fallback to EMAIL only if clearly the creation date. Output YYYY.MM.DD or null.
+- order_date: RECEIPT labels like "Order date", "Bestelldatum", "Datum" near the order header. Fallback to EMAIL only if clearly the creation date. Output YYYY.MM.DD or null.
 
 PRODUCTS (RECEIPT ONLY)
+- A line item is a row with a printed position number (labels/examples: "Pos.", "Pos", "Pos-", or a leading index column). Use that printed position as product_position.
 - Extract each distinct purchased item row (don’t merge kit/container rows; don’t duplicate).
-- product_position: ordinal among ALL item rows in the RECEIPT (1-based). Do not renumber after filtering.
-- product_article_code (choose ONE token for the row):
-  - Prefer tokens under/near labels: Art.-Nr | Artikelnummer | Item | Part No | Best.-Nr | SKU.
-  - If multiple candidates: (1) alphanumeric starting with a letter (e.g., X7630260), else (2) 5–10 digit numeric (e.g., 15630610), else null.
-  - Deprioritize unlabeled 12–14 digit numbers (likely GTIN/EAN) unless explicitly labeled as the article code.
-  - Deprioritize repetitive family prefixes across many rows (e.g., FRAI...) unless explicitly labeled as the article number for that row.
-  - Strip obvious trailing units/descriptors (EA/QTY/Stk/pcs/Dxx/E) only when clearly separable.
-- product_quantity: integer from the row’s quantity cell/label (Qty | Menge | Stk | pcs). If unclear → null.
+
+ARTICLE CODE SELECTION (choose exactly ONE token for each row):
+Priority order when labels appear on/near the same row:
+  1) Tokens under/near labels: "Ihre Materialnummer" | "Customer material no" | "Material-Nr Kunde".
+  2) Else labels: Art.-Nr | Artikelnummer | Best.-Nr | Part No | Item | SKU.
+  3) Else heuristic tie-breakers on the row: (a) a 5–10 digit numeric (e.g., 15630610), or (b) an alphanumeric starting with a letter (e.g., X920381742).
+Deprioritize and only choose if explicitly labeled as the article number for the row:
+  - Obvious family/catalog prefixes repeating across many rows (e.g., FRAI****, common vendor-family prefixes).
+  - Unlabeled 12–14 digit numbers (likely GTIN/EAN) unless the label explicitly states Artikelnummer/Part No for that number.
+If two candidates satisfy the same label, choose the one closest to the quantity cell on that row.
+
+QUANTITY
+- Use the integer from the row’s quantity cell/label ("Qty", "Menge", "Stk", "pcs"). Ignore pack size, price, or totals.
 
 STRICT PRECEDENCE RECAP
 - Buyer fields: EMAIL signature > RECEIPT.
-- Order header + Delivery address: RECEIPT > EMAIL.
+- Order header + Delivery address: RECEIPT ship-to > EMAIL.
 - Products: RECEIPT only.
+
+FINAL CONSISTENCY PASS (YOU MUST DO THIS BEFORE OUTPUT)
+- Check each selected field against the above rules. If a chosen address appears in header/footer boilerplate or lacks delivery labels, set address fields to null rather than guessing.
+- If both diacritic and plain forms of a city exist, choose the diacritic form present near the ship-to block.
+- For each line item, verify that product_position equals the printed Pos. number; if none found, exclude the row.
+- For each line item, verify article_code follows the selection order and does not use family prefixes when a labeled numeric part exists.
 
 SCHEMA (must match exactly)
 {
@@ -109,23 +139,44 @@ OUTPUT
 Return ONLY the JSON object matching SCHEMA. No extra text.
 """
 
-def extract_text_from_pdf(pdf_path) -> str:
-    text_parts = []
-    try:
-        with open(pdf_path, "rb") as f:
-            reader = PdfReader(f)
-            for page in reader.pages:
-                try:
-                    t = page.extract_text() or ""
-                    text_parts.append(t)
-                except Exception:
-                    pass
-    except Exception as e:
-        print(f"PDF read error for {pdf_path}: {e}")
-    return "\n".join([p for p in text_parts if p]).strip()
+# =========================
+# PDF text extraction (layout-aware when possible; still generic)
+# =========================
+def extract_text_from_pdf(pdf_path: str) -> str:
+    # Try PyMuPDF (layout grouping keeps diacritics reliably)
+    if fitz is not None:
+        try:
+            doc = fitz.open(pdf_path)
+            parts = []
+            for page in doc:
+                # Blocks preserve reading order reasonably well
+                blocks = page.get_text("blocks")
+                # sort by y, then x
+                blocks = sorted(blocks, key=lambda b: (round(b[1], 1), round(b[0], 1)))
+                for b in blocks:
+                    txt = (b[4] or "").strip()
+                    if txt:
+                        parts.append(txt)
+            doc.close()
+            if parts:
+                return "\n".join(parts)
+        except Exception:
+            pass
+    # Fallback to pdfminer if available
+    if pdfminer_extract_text is not None:
+        try:
+            return pdfminer_extract_text(pdf_path) or ""
+        except Exception:
+            pass
+    # Last-resort: no extraction
+    return ""
 
+# =========================
+# Prompt assembly
+# =========================
 def make_extraction_messages(email_text: str, receipt_text: str):
-    user_block = f"""USER INPUT (pass both blocks):
+    # Light formatting to keep model guidance clear; no dataset-specific cues
+    user_block = f"""USER INPUT (pass both blocks exactly):
 EMAIL:
 <<<{email_text or ""}>>>
 
@@ -136,24 +187,27 @@ RECEIPT:
         {"role": "user", "content": user_block},
     ]
 
+# =========================
+# LLM call (deterministic settings)
+# =========================
 def call_llm(messages: list) -> tuple[str, dict | None]:
     try:
         resp = client.responses.create(
             model=azure_deployment,
             input=messages,
             temperature=0,
-            max_output_tokens=1200,
+            max_output_tokens=1500,
         )
         text = resp.output_text or ""
     except Exception as e:
         return f"LLM call failed: {e}", None
-    # Strip code fences
+
     stripped = text.strip()
     if stripped.startswith("```"):
         lines = stripped.splitlines()
         if lines[0].startswith("```") and lines[-1].startswith("```"):
             stripped = "\n".join(lines[1:-1])
-    # Extract JSON substring if needed
+
     candidate = stripped
     if not candidate.startswith("{"):
         m = re.search(r"\{[\s\S]*\}\s*$", stripped)
@@ -172,6 +226,9 @@ def call_llm(messages: list) -> tuple[str, dict | None]:
                 pass
         return f"Non-JSON or invalid JSON returned:\n{text}", None
 
+# =========================
+# Evaluation helpers (unchanged)
+# =========================
 def flatten_paths(d, base=""):
     if isinstance(d, dict):
         for k, v in d.items():
@@ -196,16 +253,25 @@ def compare_json(expected: dict, got: dict):
     acc = (match_count / total * 100.0) if total else 0.0
     return acc, rows
 
+# =========================
+# Build maps from CSVs (unchanged except diacritics fixes)
+# =========================
 def build_expected_map_from_csv(path: str) -> dict:
-    # Read expected CSV and group by Index to build schema JSON per order
     df_exp = pd.read_csv(path, encoding="cp1252")
     expected_map: dict[int, dict] = {}
-    # Normalize city umlauts if encoded as replacement chars
+
     def fix_text(s):
         if pd.isna(s):
             return None
         s = str(s)
-        return s.replace("Ã¼", "ü").replace("Ã„", "Ä").replace("Ã¶", "ö").replace("ÃŸ", "ß").replace("Ã–", "Ö").replace("Ã¼", "ü").replace("Ã¤", "ä")
+        return (s
+                .replace("Ã¼", "ü")
+                .replace("Ã„", "Ä")
+                .replace("Ã¶", "ö")
+                .replace("ÃŸ", "ß")
+                .replace("Ã–", "Ö")
+                .replace("Ã¤", "ä"))
+
     for idx, row in df_exp.iterrows():
         i = int(row["Index"]) if not pd.isna(row["Index"]) else None
         if i is None:
@@ -220,7 +286,6 @@ def build_expected_map_from_csv(path: str) -> dict:
                 },
                 "order": {
                     "order_number": fix_text(row.get("order_number")),
-                    # Convert DD.MM.YYYY to YYYY.MM.DD
                     "order_date": None,
                     "delivery_address_street": fix_text(row.get("delivery_address_street")),
                     "delivery_address_city": fix_text(row.get("delivery_address_city")),
@@ -236,7 +301,6 @@ def build_expected_map_from_csv(path: str) -> dict:
                 else:
                     entry["order"]["order_date"] = date_val
             expected_map[i] = entry
-        # Append product line (multiple rows may exist per index)
         pos = row.get("product_position")
         code = fix_text(row.get("product_article_code"))
         qty = row.get("product_quantity")
@@ -254,25 +318,27 @@ def build_expected_map_from_csv(path: str) -> dict:
                 "product_article_code": code if code else None,
                 "product_quantity": qty_int,
             })
-    # Sort products by position where available
     for i, entry in expected_map.items():
         entry["products"].sort(key=lambda p: (p["product_position"] is None, p["product_position"]))
     return expected_map
 
+
 def build_email_map_from_csv(path: str) -> dict:
-    # Read the emails CSV where each email is a quoted multiline field in column 0
     df_em = pd.read_csv(path, encoding="cp1252")
-    emails_series = df_em.iloc[:, 0]  # first column
+    emails_series = df_em.iloc[:, 0]
     emails = [str(v) for v in emails_series if isinstance(v, str) and v.strip() and not v.strip().lower().startswith('sales email')]
-    # Map 1-based index to email text in order
     email_map = {i + 1: emails[i] for i in range(min(len(emails), 1000))}
     return email_map
 
+# =========================
+# Main
+# =========================
 def main():
     expected_map = build_expected_map_from_csv(PATH_EXPECTED)
     email_map = build_email_map_from_csv(PATH_SALES_EMAILS)
     indices = sorted(expected_map.keys())
     results = []
+
     for pdf_idx in tqdm(indices):
         pdf_path = os.path.join(PATH_RECEIPTS, f"{pdf_idx}.pdf")
         if not os.path.exists(pdf_path):
@@ -297,23 +363,16 @@ def main():
             "expected": expected_json,
             "raw_ai": raw_text
         })
-        # Print side by side
         print(f"\nRow {pdf_idx}:")
         print("AI Output:")
         print(json.dumps(json_data, ensure_ascii=False, indent=2))
         print("Expected Output:")
         print(json.dumps(expected_json, ensure_ascii=False, indent=2))
         print(f"Accuracy: {acc:.2f}%")
-    # Save results as CSV
-    out_rows = []
-    for r in results:
-        out_rows.append({
-            "row": r["row"],
-            "accuracy": r["accuracy"],
-        })
+
+    out_rows = [{"row": r["row"], "accuracy": r["accuracy"]} for r in results]
     pd.DataFrame(out_rows).to_csv(os.path.join(PATH_ROOT, "batch_extraction_results.csv"), index=False)
 
-    # Save side-by-side comparison as a single Excel sheet
     side_by_side_rows = []
     for r in results:
         side_by_side_rows.append({
@@ -325,7 +384,6 @@ def main():
     side_by_side_df = pd.DataFrame(side_by_side_rows, columns=["row", "accuracy", "expected_output", "ai_output"])
     side_by_side_df.to_excel(os.path.join(PATH_ROOT, "batch_extraction_comparison.xlsx"), index=False)
 
-    # Print summary
     print("\nSummary:")
     acc_values = []
     for r in results:
